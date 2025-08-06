@@ -15,7 +15,7 @@ TBD maybe more
 
 ## Initiliase your db
 ```bash
-python vector_db.py --source ./docs/ --db ./vector_db --init
+python vector_db.py --source /path/to/docs --db /path/to/vector_db --init
 ```
 
 ## Test with query.py
@@ -47,6 +47,5 @@ docker compose up -d --build
       summarize: true
       summaryModel: "current_model"
       forcePrompt: false
-      # modelDisplayLabel: "Ollama"
 .....
 ```
