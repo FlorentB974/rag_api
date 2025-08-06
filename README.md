@@ -3,9 +3,12 @@ Python RAG API
 
 Objective is to feed it personal docs and be able to query using a UI like LibreChat.
 
+Prerequisites: Docker, python3, ollama installed
+
 1. Setup your python venv
 2. Initialise a vector db (ChromaDB in our case)
-3. Ask stuff using query.py 
+3. Ask stuff using query.py to test
+4. Configure your LibreChat endpoint
 
 ## Resolve dependencies
 ```bash
