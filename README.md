@@ -13,10 +13,19 @@ pip install langchain unstructured huggingface_hub chromadb sentence-transformer
 
 TBD maybe more
 
-## Initiliase your db
+## Vector DB
+
+### Initiliase your db
 ```bash
 python vector_db.py --source /path/to/docs --db /path/to/vector_db --init
 ```
+
+### Add new files into db (optional)
+```bash
+python vector_db.py --source /path/to/newfile --db path/to/vector_db
+```
+
+After this, you will need to restart the docker compose, see command below.
 
 ## Test with query.py
 ```bash
@@ -24,13 +33,11 @@ python query.py
 ```
 
 ## Librechat endpoint
-
 ```bash
 docker compose up -d --build
 ```
 
 ### Add in your librechat.yml:
-
 ```yaml
 .....
     - name: "Personal Docs"
