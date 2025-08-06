@@ -22,3 +22,31 @@ python vector_db.py --source ./docs/ --db ./vector_db --init
 ```bash
 python query.py
 ```
+
+## Librechat endpoint
+
+```bash
+docker compose up -d --build
+```
+
+### Add in your librechat.yml:
+
+```yaml
+.....
+    - name: "Personal Docs"
+      apiKey: "ollama"
+      # use 'host.docker.internal' instead of localhost if running LibreChat in a docker container
+      baseURL: "http://<endpoint_ip>:5500/v1"
+      models:
+        default: [
+          "mistral"
+          ]
+        fetch: false
+      titleConvo: true
+      titleModel: "current_model"
+      summarize: true
+      summaryModel: "current_model"
+      forcePrompt: false
+      # modelDisplayLabel: "Ollama"
+.....
+```
