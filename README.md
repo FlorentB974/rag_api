@@ -8,7 +8,7 @@ python -m venv rag_env
 source rag_env/bin/activate
 
 # Install core packages
-pip install langchain unstructured huggingface_hub chromadb sentence-transformers llama-cpp-python pypdf
+pip install langchain langchain_community langchain_huggingface langchain_chroma unstructured huggingface_hub chromadb sentence-transformers llama-cpp-python pypdf
 ```
 
 TBD maybe more
