@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  librechat-rag:
+    build: .
+    container_name: librechat-rag-endpoint
+    ports:
+      - "5500:5500"
+    volumes:
+      - vector_db:/app/vector_db
+    environment:
+      - VECTOR_DB_PATH=/app/vector_db
+      - COLLECTION_NAME=my_documents
+      - OLLAMA_MODEL=mistral
+      - EMBED_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - OLLAMA_HOST=host.docker.internal
+    restart: unless-stopped
+    networks:
+      - librechat-net
+
+volumes:
+  vector_db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /path/to/vector_db  # Update with your actual path
+
+networks:
+  librechat-net:
+    driver: bridge
