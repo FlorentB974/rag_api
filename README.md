@@ -1,6 +1,12 @@
 # rag_api
 Python RAG API 
 
+Objective is to feed it personal docs and be able to query using a UI like LibreChat.
+
+1. Setup your python venv
+2. Initialise a vector db (ChromaDB in our case)
+3. Ask stuff using query.py 
+
 ## Resolve dependencies
 ```bash
 # Create virtual environment (optional)
