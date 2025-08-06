@@ -4,8 +4,8 @@ Python RAG API
 ## Resolve dependencies
 ```bash
 # Create virtual environment (optional)
-python -m venv cag_env
-source cag_env/bin/activate
+python -m venv rag_env
+source rag_env/bin/activate
 
 # Install core packages
 pip install langchain unstructured huggingface_hub chromadb sentence-transformers llama-cpp-python pypdf
