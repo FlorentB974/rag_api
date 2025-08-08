@@ -46,6 +46,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Ensure full history for secret scanning
+        
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -62,10 +63,10 @@ jobs:
         bandit -r . --exclude ./rag_env,./tests --format json --output bandit-report.json || true
       continue-on-error: true  # Allow CI to continue even if Bandit finds issues
 
-    - name: Run Safety for dependency vulnerability scanning
-      run: |
-        safety scan --save-json safety-report.json
-      continue-on-error: true  # Allow CI to continue even if Safety finds vulnerabilities
+    - name: Run Safety CLI to check for vulnerabilities
+      uses: pyupio/safety-action@v1
+      with:
+        api-key: ${{ secrets.SAFETY_API_KEY }}
 
     - name: Run TruffleHog for secret scanning
       uses: trufflesecurity/trufflehog@main
