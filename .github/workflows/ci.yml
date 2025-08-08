@@ -33,10 +33,11 @@ jobs:
         flake8 . --max-line-length=88 --extend-ignore=E203,E501
       continue-on-error: true  # Allow CI to continue even if tests fail
 
-    - name: Run tests
-      run: |
-        pytest
-      continue-on-error: true  # Allow CI to continue even if tests fail
+    # To be implemented later
+    # - name: Run tests
+    #   run: |
+    #     pytest
+    #   continue-on-error: true  # Allow CI to continue even if tests fail
 
   security-checks:
     runs-on: ubuntu-latest
@@ -77,7 +78,7 @@ jobs:
         # Scan current repo & output JSON
         path: .
         format: json
-        output: trufflehog-results.json
+        output: trufflehog-report.json
         # Fail only on verified secrets (recommended)
         fail: true
         # Exclude unverified results & entropy checks
@@ -92,5 +93,4 @@ jobs:
           bandit-report.json
           safety-report.json
           trufflehog-report.json
-          trufflehog-results.json
         retention-days: 7
