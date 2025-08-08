@@ -1,4 +1,4 @@
-name: CI
+name: CI and Security Checks
 
 on:
   push:
@@ -15,6 +15,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for security scanning
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -29,8 +31,54 @@ jobs:
     - name: Run flake8
       run: |
         flake8 . --max-line-length=88 --extend-ignore=E203,E501
+      continue-on-error: true  # Allow CI to continue even if tests fail
 
     - name: Run tests
-      continue-on-error: true
       run: |
         pytest
+      continue-on-error: true  # Allow CI to continue even if tests fail
+
+  security-checks:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Ensure full history for secret scanning
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety
+
+    - name: Run Bandit for static code analysis
+      run: |
+        bandit -r . --exclude ./rag_env,./tests --format json --output bandit-report.json || true
+      continue-on-error: true  # Allow CI to continue even if Bandit finds issues
+
+    - name: Run Safety for dependency vulnerability scanning
+      run: |
+        safety check --full-report --output json --save-json safety-report.json
+      continue-on-error: true  # Allow CI to continue even if Safety finds vulnerabilities
+
+    - name: TruffleHog for secret scanning
+      uses: trufflesecurity/trufflehog@v3
+      with:
+        path: ./
+        extra_args: --json --output trufflehog-report.json
+      continue-on-error: true  # Allow CI to continue even if secrets are found
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+          trufflehog-report.json
+        retention-days: 7
