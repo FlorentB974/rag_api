@@ -9,7 +9,7 @@ embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM
 
 # Load vector DB
 vector_db = Chroma(
-    persist_directory="/path/to/vector_db", # Update with your actual path
+    persist_directory="/path/to/vector_db",  # Update with your actual path
     embedding_function=embed_model,
     collection_name="my_documents"  # Add collection name
 )
@@ -18,7 +18,9 @@ vector_db = Chroma(
 llm = Ollama(
     model="mistral:latest",  # Match the model you pulled
     temperature=0.1,
-    system="You are an expert assistant specialized in answering questions about the user's personal documents. Provide detailed responses based strictly on the following context:"
+    system="You are an expert assistant specialized in answering questions "
+    "about the user's personal documents. "
+    "Provide detailed responses based strictly on the following context:"
 )
 
 # Custom prompt template for better context awareness
