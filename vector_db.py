@@ -21,7 +21,7 @@ def load_documents(source_path: str):
     """Load documents from a file or directory"""
     docs = []
     source_path = Path(source_path)
-    
+
     if source_path.is_file():
         file_ext = source_path.suffix.lower()
         if file_ext in LOADER_MAPPING:
@@ -31,7 +31,7 @@ def load_documents(source_path: str):
             print(f"Loaded {source_path}")
         else:
             print(f"Skipped unsupported file: {source_path}")
-    
+
     elif source_path.is_dir():
         for ext, (loader_class, loader_args) in LOADER_MAPPING.items():
             loader = DirectoryLoader(
@@ -44,14 +44,15 @@ def load_documents(source_path: str):
             )
             docs.extend(loader.load())
         print(f"Loaded {len(docs)} documents from directory")
-    
+
     return docs
+
 
 def main():
     parser = argparse.ArgumentParser(description='Manage vector database')
-    parser.add_argument('--source', required=True, 
+    parser.add_argument('--source', required=True,
                         help='Path to document file or directory')
-    parser.add_argument('--db', required=True, 
+    parser.add_argument('--db', required=True,
                         help='Path to vector database directory')
     parser.add_argument('--init', action='store_true',
                         help='Initialize new database (overwrites existing)')
@@ -100,7 +101,7 @@ def main():
         # Chroma now automatically persists when using persist_directory
         vector_db.add_documents(chunks)
         print(f"Added {len(chunks)} chunks to existing database")
-    
+
     # Get document count - new method
     try:
         # For newer Chroma versions
@@ -108,7 +109,8 @@ def main():
         print(f"Total entries in database: {count}")
     except AttributeError:
         # For older versions
-        print(f"Database updated. Collection count not available via this method.")
+        print("Database updated. Collection count not available via this method.")
+
 
 if __name__ == "__main__":
     main()

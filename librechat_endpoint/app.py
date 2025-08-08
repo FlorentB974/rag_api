@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # These are loaded once at startup and are safe for concurrent reads.
 PERSIST_DIRECTORY = os.getenv("VECTOR_DB_PATH", "/app/vector_db")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_documents")
-EMBED_MODEL_NAME = os.getenv("EMBED_MODEL", 
+EMBED_MODEL_NAME = os.getenv("EMBED_MODEL",
                              "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral:latest")
 
