@@ -64,7 +64,7 @@ jobs:
 
     - name: Run Safety for dependency vulnerability scanning
       run: |
-        safety check --save-json safety-report.json
+        safety scan --save-json safety-report.json
       continue-on-error: true  # Allow CI to continue even if Safety finds vulnerabilities
 
     - name: Run TruffleHog for secret scanning
