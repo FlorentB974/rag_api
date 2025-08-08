@@ -63,14 +63,14 @@ jobs:
 
     - name: Run Safety for dependency vulnerability scanning
       run: |
-        safety check --full-report --output json --save-json safety-report.json
+        safety check --save-json safety-report.json
       continue-on-error: true  # Allow CI to continue even if Safety finds vulnerabilities
 
     - name: TruffleHog for secret scanning
       uses: trufflesecurity/trufflehog@v3.90.3
       with:
         path: ./
-        extra_args: --json --output trufflehog-report.json
+        extra_args: --json --only-verified > trufflehog-report.json
       continue-on-error: true  # Allow CI to continue even if secrets are found
 
     - name: Upload security reports
