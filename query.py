@@ -9,7 +9,7 @@ embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM
 
 # Load vector DB
 vector_db = Chroma(
-    persist_directory="/Users/florentbaillif/cag/vector_db",
+    persist_directory="/path/to/vector_db", # Update with your actual path
     embedding_function=embed_model,
     collection_name="my_documents"  # Add collection name
 )
