@@ -4,7 +4,7 @@ import json
 import logging
 import asyncio
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 # These are loaded once at startup and are safe for concurrent reads.
 PERSIST_DIRECTORY = os.getenv("VECTOR_DB_PATH", "/app/vector_db")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_documents")
-EMBED_MODEL_NAME = os.getenv("EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+EMBED_MODEL_NAME = os.getenv("EMBED_MODEL", 
+                             "sentence-transformers/all-MiniLM-L6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral:latest")
 
 # Load embeddings and vector DB globally
@@ -36,14 +37,16 @@ try:
     )
     logger.info("Successfully loaded Vector DB and Embedding Model.")
 except Exception as e:
-    logger.error(f"Failed to load vector DB or embedding model: {e}", exc_info=True)
-    vector_db = None # Handle case where DB fails to load
+    logger.error(f"Failed to load vector DB or embedding model: {e}",
+                 exc_info=True)
+    vector_db = None  # Handle case where DB fails to load
 
 PROMPT_TEMPLATE = """
 <|system|>
 You are an expert assistant for document-based questions. Strict rules:
 1. ANSWER ONLY from provided context
-2. If answer isn't EXACTLY in context, say: "I couldn't find that in my documents"
+2. If answer isn't EXACTLY in context, say:
+        "I couldn't find that in my documents"
 3. Never invent details
 4. For numerical queries, verify calculations twice
 5. Quote sources verbatim when possible
@@ -63,8 +66,10 @@ PROMPT = PromptTemplate(
     input_variables=["context", "question"]
 )
 
+
 # --- OpenAI-compatible formatting functions ---
-def format_openai_chunk(content: str, is_final: bool = False) -> Dict[str, Any]:
+def format_openai_chunk(content: str, is_final:
+                        bool = False) -> Dict[str, Any]:
     return {
         "id": f"chatcmpl-{int(time.time() * 1000)}",
         "object": "chat.completion.chunk",
@@ -77,6 +82,7 @@ def format_openai_chunk(content: str, is_final: bool = False) -> Dict[str, Any]:
         }]
     }
 
+
 def format_sources(source_documents: List[Dict]) -> str:
     if not source_documents:
         return ""
@@ -86,6 +92,7 @@ def format_sources(source_documents: List[Dict]) -> str:
         page = doc.metadata.get('page', 'N/A')
         sources += f"\n{i}. {source} (page {page})"
     return sources
+
 
 # --- Core Streaming Logic ---
 async def stream_qa_response(query: str) -> AsyncGenerator[str, None]:
@@ -166,26 +173,32 @@ async def ask(request: Request):
     try:
         data = await request.json()
         streaming = data.get('stream', False)
-        
-        user_message = next((msg['content'] for msg in reversed(data.get('messages', [])) if msg['role'] == 'user'), None)
-        
+
+        user_message = next((msg['content'] for msg in
+                             reversed(data.get('messages', []))
+                             if msg['role'] == 'user'), None)
+
         if not user_message:
-            raise HTTPException(status_code=400, detail="No user message found.")
-            
+            raise HTTPException(status_code=400,
+                                detail="No user message found.")
+    
         query = user_message
         logger.info(f"Processing query: {query}")
 
         if streaming:
-            return StreamingResponse(stream_qa_response(query), media_type="text/event-stream")
-        
-        # Non-streaming response logic remains the same but uses a non-callback chain
+            return StreamingResponse(stream_qa_response(query),
+                                     media_type="text/event-stream")
+
+        # Non-streaming response logic remains the same 
+        # but uses a non-callback chain
         llm = Ollama(model=OLLAMA_MODEL, temperature=0.1)
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm, chain_type="stuff", retriever=vector_db.as_retriever(),
             chain_type_kwargs={"prompt": PROMPT}, return_source_documents=True
         )
         result = await qa_chain.ainvoke({"query": query})
-        response_content = result['result'] + format_sources(result.get('source_documents', []))
+        response_content = result['result'] + format_sources(
+            result.get('source_documents', []))
         
         return format_openai_response(
             content=response_content,
@@ -197,23 +210,32 @@ async def ask(request: Request):
         raise HTTPException(status_code=400, detail="Invalid JSON body.")
     except Exception as e:
         logger.exception(f"An unexpected error occurred: {e}")
-        raise HTTPException(status_code=500, detail="An internal server error occurred.")
+        raise HTTPException(status_code=500,
+                            detail="An internal server error occurred.")
+
 
 # Helper for non-streaming response
-def format_openai_response(content: str, prompt_tokens: int, completion_tokens: int) -> Dict[str, Any]:
+def format_openai_response(content: str,
+                           prompt_tokens: int,
+                           completion_tokens: int) -> Dict[str, Any]:
     return {
         "id": f"chatcmpl-{int(time.time() * 1000)}",
         "object": "chat.completion",
         "created": int(time.time()),
         "model": OLLAMA_MODEL,
-        "choices": [{"index": 0, "message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],
-        "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens, "total_tokens": prompt_tokens + completion_tokens}
+        "choices": [{"index": 0,
+                     "message": {"role": "assistant", "content": content},
+                     "finish_reason": "stop"}],
+        "usage": {"prompt_tokens": prompt_tokens,
+                  "completion_tokens": completion_tokens,
+                  "total_tokens": prompt_tokens + completion_tokens}
     }
 
 
 @app.get('/health')
 def health_check():
     return {"status": "healthy" if vector_db else "unhealthy", "port": 5500}
+
 
 @app.get('/documents')
 def get_documents():
@@ -237,6 +259,7 @@ def get_documents():
     except Exception as e:
         logger.exception(f"Error fetching documents: {str(e)}")
         return {"error": "Failed to retrieve documents", "detail": str(e)}
+
 
 if __name__ == '__main__':
     import uvicorn

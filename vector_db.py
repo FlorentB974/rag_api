@@ -1,4 +1,3 @@
-import os
 import argparse
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, CSVLoader, UnstructuredFileLoader, DirectoryLoader
@@ -16,6 +15,7 @@ LOADER_MAPPING = {
     '.txt': (UnstructuredFileLoader, {"mode": "single"}),
     '.md': (UnstructuredFileLoader, {"mode": "single"}),
 }
+
 
 def load_documents(source_path: str):
     """Load documents from a file or directory"""
