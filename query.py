@@ -53,10 +53,10 @@ while True:
     query = input("\nYour question (type 'exit' to quit): ")
     if query.lower() == 'exit':
         break
-        
+
     result = qa_chain.invoke({"query": query})
     print(f"\nAnswer: {result['result']}")
-    
+
     # Display sources
     print("\nSources:")
     for i, doc in enumerate(result['source_documents']):

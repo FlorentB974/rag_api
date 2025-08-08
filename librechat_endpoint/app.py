@@ -119,7 +119,7 @@ async def stream_qa_response(query: str) -> AsyncGenerator[str, None]:
         top_k=20,          # Focus on high-probability tokens
         top_p=0.9,
         repeat_penalty=1.2,  # Discourage repetition
-        num_ctx=4096,       # Match context window size        
+        num_ctx=4096,       # Match context window size
         system="You are an expert assistant... (system prompt)",
         callbacks=[callback],  # Hook in the callback
         streaming=True
@@ -154,7 +154,7 @@ async def stream_qa_response(query: str) -> AsyncGenerator[str, None]:
 
     # Wait for the background task to complete to get the full result
     result = await task
-    
+
     # Stream the sources if they are available in the final result
     if result and "source_documents" in result:
         sources_text = format_sources(result['source_documents'])
@@ -181,7 +181,7 @@ async def ask(request: Request):
         if not user_message:
             raise HTTPException(status_code=400,
                                 detail="No user message found.")
-    
+
         query = user_message
         logger.info(f"Processing query: {query}")
 
@@ -189,7 +189,7 @@ async def ask(request: Request):
             return StreamingResponse(stream_qa_response(query),
                                      media_type="text/event-stream")
 
-        # Non-streaming response logic remains the same 
+        # Non-streaming response logic remains the same
         # but uses a non-callback chain
         llm = Ollama(model=OLLAMA_MODEL, temperature=0.1)
         qa_chain = RetrievalQA.from_chain_type(
@@ -199,13 +199,13 @@ async def ask(request: Request):
         result = await qa_chain.ainvoke({"query": query})
         response_content = result['result'] + format_sources(
             result.get('source_documents', []))
-        
+
         return format_openai_response(
             content=response_content,
             prompt_tokens=len(query.split()),
             completion_tokens=len(response_content.split())
         )
-            
+
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON body.")
     except Exception as e:
@@ -244,7 +244,7 @@ def get_documents():
         # Access the Chroma collection metadata
         collection = vector_db.get()
         metadatas = collection.get('metadatas', [])
-        
+
         # Extract unique document sources
         unique_sources = set()
         for meta in metadatas:
@@ -253,9 +253,9 @@ def get_documents():
                 source = meta['source']
                 filename = os.path.basename(source)
                 unique_sources.add(filename)
-        
+
         return {"documents": sorted(list(unique_sources))}
-    
+
     except Exception as e:
         logger.exception(f"Error fetching documents: {str(e)}")
         return {"error": "Failed to retrieve documents", "detail": str(e)}
