@@ -71,15 +71,8 @@ jobs:
     - name: Run TruffleHog for secret scanning
       uses: trufflesecurity/trufflehog@main
       with:
-        # Scan current repo & output JSON
         path: .
-        format: json
-        output: trufflehog-report.json
-        # Fail only on verified secrets (recommended)
-        fail: true
-        # Exclude unverified results & entropy checks
-        only_verified: true
-        exclude_detectors: 'Entropy Detector'
+        extra_args: --json --only-verified --exclude-detectors=Entropy --output=trufflehog-report.json
 
     - name: Upload security reports
       uses: actions/upload-artifact@v4
