@@ -68,11 +68,6 @@ jobs:
       continue-on-error: true  # Allow CI to continue even if Safety finds vulnerabilities
 
     - name: Run TruffleHog for secret scanning
-      run: |
-        docker run --rm -v "$(pwd):/repo" ghcr.io/trufflesecurity/trufflehog:3.81.9 git file:///repo --json --only-verified > trufflehog-report.json
-      continue-on-error: true  # Allow CI to continue for review of secrets
-
-    - name: Run TruffleHog
       uses: trufflesecurity/trufflehog@main
       with:
         # Scan current repo & output JSON
