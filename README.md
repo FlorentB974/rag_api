@@ -1,5 +1,6 @@
 # rag_api
 
+
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![CI](https://github.com/FlorentB974/rag_api/actions/workflows/ci.yml/badge.svg)
@@ -56,6 +57,22 @@ The `rag_api` project enables users to ingest personal documents into a vector d
    ```
 
 ## Usage
+
+### Environment Variables (.env Setup)
+
+The API and scripts use environment variables for configuration. These are loaded automatically from a `.env` file using [python-dotenv](https://pypi.org/project/python-dotenv/).
+
+1. Create a file named `.env` in the project root (same directory as `query.py` and `vector_db.py`).
+2. Add the following variables (example values):
+  ```env
+  VECTOR_DB_PATH=./vector_db
+  EMBED_MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
+  COLLECTION_NAME=my_documents
+  OLLAMA_MODEL=mistral
+  ```
+3. Adjust values as needed for your setup (e.g., change model names or paths).
+
+**Note:** Never commit sensitive information (API keys, passwords) to your `.env` file if sharing your code.
 
 ### Initialize the Vector Database
 To create a new vector database and index documents:
