@@ -1,15 +1,22 @@
+import os
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_ollama import OllamaLLM as Ollama
 from langchain.prompts import PromptTemplate
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH")
+EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME")
 
 # Initialize embedding model
-embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+embed_model = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
 # Load vector DB
 vector_db = Chroma(
-    persist_directory="/path/to/vector_db",  # Update with your actual path
+    persist_directory=VECTOR_DB_PATH,
     embedding_function=embed_model,
     collection_name="my_documents"  # Add collection name
 )
@@ -60,4 +67,4 @@ while True:
     # Display sources
     print("\nSources:")
     for i, doc in enumerate(result['source_documents']):
-        print(f"{i+1}. {doc.metadata['source']} (page {doc.metadata.get('page', 'N/A')})")
+        print(f"{i + 1}. {doc.metadata['source']} (page {doc.metadata.get('page', 'N/A')})")

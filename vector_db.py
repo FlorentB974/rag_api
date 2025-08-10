@@ -1,9 +1,11 @@
+import os
 import argparse
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, CSVLoader, UnstructuredFileLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+from dotenv import load_dotenv
 
 # Configure loader mapping for different file types
 LOADER_MAPPING = {
@@ -15,6 +17,9 @@ LOADER_MAPPING = {
     '.txt': (UnstructuredFileLoader, {"mode": "single"}),
     '.md': (UnstructuredFileLoader, {"mode": "single"}),
 }
+
+load_dotenv()
+EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME")
 
 
 def load_documents(source_path: str):
@@ -76,7 +81,7 @@ def main():
 
     # Initialize embedding model
     embed_model = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_name=EMBED_MODEL_NAME,
         model_kwargs={"device": "cpu"}
     )
 
