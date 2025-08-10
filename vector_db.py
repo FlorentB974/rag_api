@@ -19,7 +19,8 @@ LOADER_MAPPING = {
 }
 
 load_dotenv()
-EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME")
+EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2")
+COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_documents")
 
 
 def load_documents(source_path: str):
@@ -93,7 +94,7 @@ def main():
             embedding=embed_model,
             persist_directory=args.db,
             collection_metadata={"hnsw:space": "cosine"},
-            collection_name="my_documents"
+            collection_name=COLLECTION_NAME
         )
         print(f"Created new vector database with {len(chunks)} chunks")
     else:
@@ -101,7 +102,7 @@ def main():
         vector_db = Chroma(
             persist_directory=args.db,
             embedding_function=embed_model,
-            collection_name="my_documents"
+            collection_name=COLLECTION_NAME
         )
         # Chroma now automatically persists when using persist_directory
         vector_db.add_documents(chunks)

@@ -8,8 +8,10 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
-VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH")
-EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME")
+VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "./vector_db")
+EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2")
+COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_documents")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral:latest")
 
 # Initialize embedding model
 embed_model = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
@@ -18,12 +20,12 @@ embed_model = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 vector_db = Chroma(
     persist_directory=VECTOR_DB_PATH,
     embedding_function=embed_model,
-    collection_name="my_documents"  # Add collection name
+    collection_name=COLLECTION_NAME  # Read collection name from env
 )
 
 # Initialize Ollama
 llm = Ollama(
-    model="mistral:latest",  # Match the model you pulled
+    model=OLLAMA_MODEL,  # Read model from env
     temperature=0.1,
     system="You are an expert assistant specialized in answering questions "
     "about the user's personal documents. "
