@@ -72,7 +72,7 @@ jobs:
       uses: trufflesecurity/trufflehog@main
       with:
         path: .
-        extra_args: --json --only-verified --exclude-detectors=Entropy 
+        extra_args: --json --only-verified
 
     - name: Upload security reports
       uses: actions/upload-artifact@v4
