@@ -72,7 +72,7 @@ jobs:
       uses: trufflesecurity/trufflehog@main
       with:
         path: .
-        extra_args: --json --only-verified --exclude-detectors=Entropy --output=trufflehog-report.json
+        extra_args: --json --only-verified --exclude-detectors=Entropy 
 
     - name: Upload security reports
       uses: actions/upload-artifact@v4
@@ -81,5 +81,4 @@ jobs:
         path: |
           bandit-report.json
           safety-report.json
-          trufflehog-report.json
         retention-days: 7
