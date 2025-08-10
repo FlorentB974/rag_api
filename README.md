@@ -52,7 +52,7 @@ The `rag_api` project enables users to ingest personal documents into a vector d
 
 3. **Install Dependencies**
    ```bash
-   pip install langchain langchain_community langchain_huggingface langchain_chroma unstructured huggingface_hub chromadb sentence-transformers llama-cpp-python pypdf
+   pip install langchain langchain_community langchain_huggingface langchain_chroma langchain_ollama unstructured huggingface_hub chromadb sentence-transformers llama-cpp-python pypdf
    ```
 
 ## Usage
