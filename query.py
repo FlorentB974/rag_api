@@ -1,8 +1,8 @@
 import os
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_ollama import OllamaLLM as Ollama
+from langchain_ollama.embeddings import OllamaEmbeddings
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
@@ -14,7 +14,7 @@ COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_documents")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3:latest")
 
 # Initialize embedding model
-embed_model = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
+embed_model = OllamaEmbeddings(model=EMBED_MODEL_NAME)
 
 # Load vector DB
 vector_db = Chroma(
@@ -26,14 +26,7 @@ vector_db = Chroma(
 # Initialize Ollama
 llm = Ollama(
     model=OLLAMA_MODEL,  # Read model from env
-    temperature=0.1,
-    system="You are a precise and careful assistant that answers questions "
-    "about the user's personal documents. You must: "
-    "1. Base answers SOLELY on the provided context\n"
-    "2. If the context doesn't contain enough information, say so\n"
-    "3. Never make assumptions or add information not present in the context\n"
-    "4. Quote relevant parts of the context to support your answers\n"
-    "5. Double-check your response against the context before providing it"
+    temperature=0.0
 )
 
 # Custom prompt template for better context awareness
@@ -67,9 +60,6 @@ Context for this response:
 
 <|user|>
 {question}</s>
-
-<|assistant|>
-Let me analyze your question using the provided context...</s>
 """
 
 PROMPT = PromptTemplate(
@@ -100,17 +90,17 @@ while True:
         f"Q: {item['question']}\nA: {item['answer']}"
         for item in conversation_context
     ]) if conversation_context else ""
-    
+
     result = qa_chain.invoke({
         "query": query + context_string
     })
-    
+
     # Store the Q&A pair in context
     conversation_context.append({
         "question": query,
         "answer": result['result']
     })
-    
+
     print(f"\nAnswer: {result['result']}")
 
     # Display sources

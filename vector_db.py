@@ -3,9 +3,10 @@ import argparse
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, CSVLoader, UnstructuredFileLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama.embeddings import OllamaEmbeddings
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
+from typing import Union
 
 # Configure loader mapping for different file types
 LOADER_MAPPING = {
@@ -23,7 +24,7 @@ EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME", "sentence-transformers/all-Mini
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_documents")
 
 
-def load_documents(source_path: str):
+def load_documents(source_path: Union[str, Path]):
     """Load documents from a file or directory"""
     docs = []
     source_path = Path(source_path)
@@ -81,9 +82,9 @@ def main():
     print(f"Split into {len(chunks)} chunks")
 
     # Initialize embedding model
-    embed_model = HuggingFaceEmbeddings(
-        model_name=EMBED_MODEL_NAME,
-        model_kwargs={"device": "cpu"}
+    embed_model = OllamaEmbeddings(
+        model=EMBED_MODEL_NAME,
+        # model_kwargs={"device": "cpu"}
     )
 
     # Handle database mode
