@@ -1,0 +1,21 @@
+# Requirements inferred from project files (query.py, vector_db.py)
+# Adjust versions as needed for your environment.
+langchain>=0.0.300
+chromadb>=0.3.28
+langchain-huggingface
+langchain-ollama
+langchain-community
+sentence-transformers>=2.2.2
+transformers>=4.30.0
+torch>=2.0.0
+python-dotenv>=1.0.0
+docx2txt>=0.8
+unstructured
+pypdf
+pandas
+tqdm
+
+# Optional / environment tooling
+# fastapi (used by librechat_endpoint), uvicorn
+fastapi
+uvicorn
