@@ -1,12 +1,111 @@
-# Advanced RAG API with Intelligent Document Processing
+# RAG API - OpenWebUI Integration
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+🚀 **Complete OpenAI-compatible RAG API for seamless OpenWebUI integration**
+
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![CI](https://github.com/FlorentB974/rag_api/actions/workflows/ci.yml/badge.svg)
-![Issues](https://img.shields.io/github/issues/FlorentB974/rag_api)
-![PRs](https://img.shields.io/github/issues-pr/FlorentB974/rag_api)
+![Docker](https://img.shields.io/badge/docker-supported-blue.svg)
+![OpenWebUI](https://img.shields.io/badge/OpenWebUI-compatible-green.svg)
 
-A sophisticated Retrieval-Augmented Generation (RAG) system with advanced document ingestion, intelligent processing, and optimized vector storage for querying personal documents.
+This project provides a fully compatible OpenAI-style API that connects your document knowledge base to OpenWebUI, enabling document-based conversational AI with intelligent retrieval and source citations.
+
+## ✨ Features
+
+- ✅ **OpenAI Compatible**: Drop-in replacement for OpenAI API in OpenWebUI
+- ✅ **Streaming Support**: Real-time response streaming
+- ✅ **Source Citations**: Automatic document source references
+- ✅ **Multi-format Documents**: PDF, DOCX, TXT, MD, CSV, JSON, and more
+- ✅ **Intelligent Chunking**: Advanced text processing for better context
+- ✅ **Document Summarization**: Auto-generated summaries for enhanced retrieval
+- ✅ **Health Monitoring**: Built-in health checks and API monitoring
+- ✅ **Docker Support**: Easy containerized deployment
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- [Ollama](https://ollama.ai) installed and running
+- Required Ollama models:
+
+  ```bash
+  ollama pull llama3.2:1b
+  ollama pull nomic-embed-text
+  ```
+
+### 1. Setup the RAG API
+
+#### Option A: Manual Configuration
+
+```bash
+# Setup virtual environment and dependencies
+./manage_rag.sh setup
+
+# Add your documents to the documents/ folder
+mkdir -p documents
+cp /path/to/your/documents/* documents/
+
+# Ingest documents into vector database
+./manage_rag.sh ingest
+
+# Start the API server
+./manage_rag.sh start
+```
+
+#### Option B: Docker Compose (To do)
+
+```yaml
+version: '3.8'
+
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    ports:
+      - "3000:8080"
+    environment:
+      - OPENAI_API_BASE_URLS=http://rag-api:5500/v1
+      - OPENAI_API_KEYS=not-required
+    depends_on:
+      - rag-api
+    networks:
+      - rag-network
+
+  rag-api:
+    build: .
+    container_name: rag-api
+    ports:
+      - "5500:5500"
+    volumes:
+      - ./vector_db:/app/vector_db
+      - ./documents:/app/documents
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
+```
+
+### 2. Test the API
+
+```bash
+# Check if everything is working
+./manage_rag.sh test
+
+# Or test manually
+curl -s http://localhost:5500/health | jq
+curl -s http://localhost:5500/v1/models | jq
+```
+
+### 3. Connect to OpenWebUI
+
+1. Open OpenWebUI in your browser
+2. Go to **Settings** → **Connections** → **OpenAI API**
+3. Add a new API connection:
+   - **API Base URL**: `http://localhost:5500/v1`
+   - **API Key**: `not-required`
+   - **Model**: `llama3.2:1b`
 
 ## Table of Contents
 
@@ -30,7 +129,7 @@ The `rag_api` project has been completely redesigned with advanced document proc
 
 ### Document Processing
 
-- **Universal Document Support**: Automatically detects and processes ANY document type using `libmagic`
+- **Universal Document Support**: Automatically detects and processes any document
 - **Intelligent Chunking**: Optimized text splitting with context-aware separators
 - **Document Summarization**: Automatic summarization using Ollama models with metadata enhancement
 - **Comprehensive Metadata**: Rich document metadata including file info, content statistics, and processing timestamps
@@ -152,15 +251,6 @@ Run the query script to test the setup:
 python query.py
 ```
 
-### Deploy the API with Docker
-
-Start the API endpoint using Docker Compose:
-
-```bash
-cd librechat_endpoint
-docker compose up -d --build
-```
-
 ## ⚙️ Configuration
 
 ### Environment Variables
@@ -273,26 +363,6 @@ Each processed document chunk now includes:
 - **Processing Info**: Chunk index, total chunks, processing timestamp
 - **Summarization**: AI-generated summary (if enabled)
 - **Deduplication**: Content hash for duplicate detection
-
-### LibreChat Integration
-
-Add the following configuration to your `librechat.yml` file:
-
-```yaml
-endpoints:
-  - name: "Personal Docs (Advanced)"
-    apiKey: "ollama"
-    baseURL: "http://host.docker.internal:5500/v1"
-    models:
-      default:
-        - "mistral"
-      fetch: false
-    titleConvo: true
-    titleModel: "current_model"
-    summarize: true
-    summaryModel: "current_model"
-    forcePrompt: false
-```
 
 ## 🚨 Troubleshooting
 
