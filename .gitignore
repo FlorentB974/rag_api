@@ -1,2 +1,11 @@
 vector_db/
 .env
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environment
+rag_env/
+.vscode/settings.json

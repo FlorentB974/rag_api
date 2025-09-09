@@ -1,122 +1,121 @@
 import os
 import argparse
+import shutil
 from pathlib import Path
-from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, CSVLoader, UnstructuredFileLoader, DirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_ollama.embeddings import OllamaEmbeddings
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
-from typing import Union
-
-# Configure loader mapping for different file types
-LOADER_MAPPING = {
-    '.pdf': (PyPDFLoader, {}),
-    '.docx': (Docx2txtLoader, {}),
-    '.csv': (CSVLoader, {}),
-    '.yaml': (UnstructuredFileLoader, {"mode": "single"}),
-    '.yml': (UnstructuredFileLoader, {"mode": "single"}),
-    '.txt': (UnstructuredFileLoader, {"mode": "single"}),
-    '.md': (UnstructuredFileLoader, {"mode": "single"}),
-}
+from rag_utils import load_and_process_documents
 
 load_dotenv()
 EMBED_MODEL_NAME = os.getenv("EMBED_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "my_documents")
+SUMMARIZE_MODEL = os.getenv("SUMMARIZE_MODEL", "llama3.2:1b")
 
 
-def load_documents(source_path: Union[str, Path]):
-    """Load documents from a file or directory"""
-    docs = []
-    source_path = Path(source_path)
-
-    if source_path.is_file():
-        file_ext = source_path.suffix.lower()
-        if file_ext in LOADER_MAPPING:
-            loader_class, loader_args = LOADER_MAPPING[file_ext]
-            loader = loader_class(str(source_path), **loader_args)
-            docs.extend(loader.load())
-            print(f"Loaded {source_path}")
-        else:
-            print(f"Skipped unsupported file: {source_path}")
-
-    elif source_path.is_dir():
-        for ext, (loader_class, loader_args) in LOADER_MAPPING.items():
-            loader = DirectoryLoader(
-                str(source_path),
-                glob=f"**/*{ext}",
-                loader_cls=loader_class,
-                loader_kwargs=loader_args,
-                use_multithreading=True,
-                show_progress=True
-            )
-            docs.extend(loader.load())
-        print(f"Loaded {len(docs)} documents from directory")
-
-    return docs
+def clear_database(db_path: str):
+    """Clear the existing vector database directory"""
+    db_path_obj = Path(db_path)
+    if db_path_obj.exists():
+        print(f"Clearing existing database at: {db_path_obj}")
+        shutil.rmtree(db_path_obj)
+        print("Database cleared successfully")
+    else:
+        print(f"Database directory does not exist: {db_path_obj}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Manage vector database')
+    parser = argparse.ArgumentParser(description='Manage vector database with advanced document processing')
     parser.add_argument('--source', required=True,
                         help='Path to document file or directory')
     parser.add_argument('--db', required=True,
                         help='Path to vector database directory')
     parser.add_argument('--init', action='store_true',
-                        help='Initialize new database (overwrites existing)')
+                        help='Initialize new database (clears existing database)')
+    parser.add_argument('--chunk-size', type=int, default=1024,
+                        help='Size of text chunks (default: 1024)')
+    parser.add_argument('--chunk-overlap', type=int, default=200,
+                        help='Overlap between chunks (default: 200)')
+    parser.add_argument('--summarize-model', default=SUMMARIZE_MODEL,
+                        help=f'Ollama model for summarization (default: {SUMMARIZE_MODEL})')
+    parser.add_argument('--no-summary', action='store_true',
+                        help='Disable document summarization')
+    parser.add_argument('--report',
+                        help='Path to save processing report (optional)')
     args = parser.parse_args()
 
-    # Load and split documents
-    documents = load_documents(args.source)
+    # Clear database if initializing
+    if args.init:
+        clear_database(args.db)
+
+    # Process documents using the advanced rag_utils
+    print("Processing documents with advanced pipeline...")
+    documents, metrics = load_and_process_documents(
+        source_path=args.source,
+        summarize_model=args.summarize_model if not args.no_summary else "",
+        chunk_size=args.chunk_size,
+        chunk_overlap=args.chunk_overlap,
+        enable_summarization=not args.no_summary
+    )
+
     if not documents:
-        print("No documents loaded. Exiting.")
+        print("No documents were processed successfully. Exiting.")
         return
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1024,
-        chunk_overlap=200,
-        length_function=len,
-        add_start_index=True,
-        separators=["\n\n", ". ", "! ", "? ", " ", ""]
-    )
-    chunks = text_splitter.split_documents(documents)
-    print(f"Split into {len(chunks)} chunks")
+    print(f"Successfully processed {metrics.successful_docs}/{metrics.total_docs} documents")
+    print(f"Generated {len(documents)} document chunks")
+    print(f"Processing took {metrics.processing_time:.2f} seconds")
 
     # Initialize embedding model
+    print(f"Initializing embedding model: {EMBED_MODEL_NAME}")
     embed_model = OllamaEmbeddings(
         model=EMBED_MODEL_NAME,
-        # model_kwargs={"device": "cpu"}
+        # model_kwargs={"device": "cpu"}  # Uncomment if you want to force CPU
     )
 
     # Handle database mode
     if args.init:
-        # Create new database (overwrite existing)
+        # Create new database
+        print("Creating new vector database...")
         vector_db = Chroma.from_documents(
-            documents=chunks,
+            documents=documents,
             embedding=embed_model,
             persist_directory=args.db,
             collection_metadata={"hnsw:space": "cosine"},
             collection_name=COLLECTION_NAME
         )
-        print(f"Created new vector database with {len(chunks)} chunks")
+        print(f"Created new vector database with {len(documents)} chunks")
     else:
         # Add to existing database
+        print("Adding documents to existing database...")
         vector_db = Chroma(
             persist_directory=args.db,
             embedding_function=embed_model,
             collection_name=COLLECTION_NAME
         )
-        # Chroma now automatically persists when using persist_directory
-        vector_db.add_documents(chunks)
-        print(f"Added {len(chunks)} chunks to existing database")
+        # Add documents to existing collection
+        vector_db.add_documents(documents)
+        print(f"Added {len(documents)} chunks to existing database")
 
-    # Get document count - new method
+    # Get document count
     try:
-        # For newer Chroma versions
         count = vector_db._collection.count()
         print(f"Total entries in database: {count}")
     except AttributeError:
-        # For older versions
         print("Database updated. Collection count not available via this method.")
+
+    # Save processing report if requested
+    if args.report:
+        from rag_utils import DocumentProcessor
+        processor = DocumentProcessor(
+            summarize_model=args.summarize_model if not args.no_summary else "",
+            chunk_size=args.chunk_size,
+            chunk_overlap=args.chunk_overlap,
+            enable_summarization=not args.no_summary
+        )
+        processor.save_processing_report(metrics, args.report)
+
+    print("Vector database operation completed successfully!")
 
 
 if __name__ == "__main__":

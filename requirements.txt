@@ -10,10 +10,11 @@ transformers>=4.30.0
 torch>=2.0.0
 python-dotenv>=1.0.0
 docx2txt>=0.8
-unstructured
+unstructured[all-docs]>=0.10.0
 pypdf
-pandas
 tqdm
+python-magic
+python-magic-bin  # For Windows compatibility
 
 # Optional / environment tooling
 # fastapi (used by librechat_endpoint), uvicorn
