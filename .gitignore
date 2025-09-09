@@ -9,3 +9,4 @@ __pycache__/
 # Python virtual environment
 rag_env/
 .vscode/settings.json
+*.log
